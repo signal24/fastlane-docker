@@ -1,0 +1,39 @@
+name: Build Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: write
+
+    steps:
+    - id: fastlane-version
+      uses: pozetroninc/github-action-get-latest-release@master
+      with:
+        repository: fastlane/fastlane
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set version
+      run: |
+        sed -i'' -E 's/"fastlane"/"fastlane", "${{ steps.fastlane-version.outputs.result }}"/g' Gemfile
+
+    - name: Build image
+      run: |
+        docker build . -t ghcr.io/signal24/fastlane-docker:${{ steps.fastlane-version.outputs.result }}
+
+    - name: Log in to registry
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+    - name: Push image
+      run: |
+        docker push ghcr.io/signal24/fastlane-docker:${{ steps.fastlane-version.outputs.result }}
+        docker tag ghcr.io/signal24/fastlane-docker:${{ steps.fastlane-version.outputs.result }} ghcr.io/signal24/fastlane-docker:latest
+        docker push ghcr.io/signal24/fastlane-docker:latest

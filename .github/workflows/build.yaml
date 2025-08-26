@@ -23,17 +23,17 @@ jobs:
 
     - name: Set version
       run: |
-        sed -i'' -E 's/"fastlane"/"fastlane", "${{ steps.fastlane-version.outputs.result }}"/g' Gemfile
+        sed -i'' -E 's/"fastlane"/"fastlane", "${{ steps.fastlane-version.outputs.release }}"/g' Gemfile
 
     - name: Build image
       run: |
-        docker build . -t ghcr.io/signal24/fastlane-docker:${{ steps.fastlane-version.outputs.result }}
+        docker build . -t ghcr.io/signal24/fastlane-docker:${{ steps.fastlane-version.outputs.release }}
 
     - name: Log in to registry
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
     - name: Push image
       run: |
-        docker push ghcr.io/signal24/fastlane-docker:${{ steps.fastlane-version.outputs.result }}
-        docker tag ghcr.io/signal24/fastlane-docker:${{ steps.fastlane-version.outputs.result }} ghcr.io/signal24/fastlane-docker:latest
+        docker push ghcr.io/signal24/fastlane-docker:${{ steps.fastlane-version.outputs.release }}
+        docker tag ghcr.io/signal24/fastlane-docker:${{ steps.fastlane-version.outputs.release }} ghcr.io/signal24/fastlane-docker:latest
         docker push ghcr.io/signal24/fastlane-docker:latest
